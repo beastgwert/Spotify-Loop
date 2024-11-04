@@ -1,0 +1,1 @@
+document.body.classList.add('my-background-color');
