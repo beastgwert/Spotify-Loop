@@ -6,7 +6,11 @@
         "default_popup": "index.html"
     },
     "permissions": [
-        "scripting"
+        "scripting",
+        "identity",
+        "declarativeContent", 
+        "https://accounts.spotify.com/*",  
+        "https://accounts.spotify.com/authorize/*"
     ],
     "host_permissions": [
         "http://*/*",
@@ -18,5 +22,10 @@
             "matches": ["https://open.spotify.com/*"],
             "js": ["src/scripts/test.ts"]
         }
-    ]
+    ],
+    "oauth2": {
+        "client_id": "8fdde060b8c64993b8f965511f1eeed1",
+        "scopes": ["user-read-private", "user-read-email", "user-modify-playback-state", "user-read-playback-state"],
+        "redirect_uri": "https://deacpadendlodnmcglohnfdpmihohjmk.chromiumapp.org/"
+    }
 }
