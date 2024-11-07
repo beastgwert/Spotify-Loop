@@ -27,7 +27,7 @@ const theme = createTheme({
     typography: {
       "fontFamily": `"Noto Sans", "Montserrat", "Roboto", "Helvetica", "Arial", sans-serif`,
       allVariants: {
-        color: dark
+        color: light
       },   
       button: {
         textTransform: 'none'

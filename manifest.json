@@ -10,7 +10,9 @@
         "identity",
         "declarativeContent", 
         "https://accounts.spotify.com/*",  
-        "https://accounts.spotify.com/authorize/*"
+        "https://accounts.spotify.com/authorize/*",
+        "storage",
+        "offscreen"
     ],
     "host_permissions": [
         "http://*/*",
@@ -23,6 +25,9 @@
             "js": ["src/scripts/test.ts"]
         }
     ],
+    "background": {
+        "service_worker": "src/background/playback.ts"
+    },
     "oauth2": {
         "client_id": "8fdde060b8c64993b8f965511f1eeed1",
         "scopes": ["user-read-private", "user-read-email", "user-modify-playback-state", "user-read-playback-state"],

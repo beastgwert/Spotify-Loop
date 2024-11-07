@@ -1,15 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Box, TextField, ThemeProvider } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import { Box, Button, TextField, ThemeProvider } from '@mui/material';
 import theme from './theme';
 
 const CLIENT_ID = '8fdde060b8c64993b8f965511f1eeed1';
 const redirectUri = chrome.identity.getRedirectURL();
-
-declare global {
-  interface Window {
-    onSpotifyWebPlaybackSDKReady: unknown;
-  }
-}
 
 function App() {
   // console.log(redirectUri);
@@ -17,24 +11,13 @@ function App() {
   const [accessToken, setAccessToken] = useState("")
   const [tracks, setTracks] = useState<any[]>([]);
   const [playing, setPlaying] = useState<any>(null);
-
-  // console.log(query);
-  // console.log("Access Token: " + accessToken);
-  // useEffect(() => { // fetch spotify api access token
-  //   let authParameters = {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-type': 'application/x-www-form-urlencoded'
-  //     },
-  //     body: 'grant_type=client_credentials&client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET
-  //   }
-  //   fetch("https://accounts.spotify.com/api/token", authParameters)
-  //     .then(res => res.json())
-  //     .then(data => setAccessToken(data.access_token))
-  // }, []);
+  const [queue, setQueue] = useState<any[]>([]);
+  const [queueIndex, setQueueIndex] = useState<number>(-1); 
+  const [firstRender, setFirstRender] = useState(true);
+  const [secondRender, setSecondRender] = useState(true);
 
   useEffect(() => { // authorize user and get access token 
-    console.log("got here");
+    console.log("Authorizing user...");
     const scopes = ["user-read-private", "user-read-email", "user-modify-playback-state", "user-read-playback-state"];
     chrome.identity.launchWebAuthFlow({
       "url": `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=${scopes.join('%20')}`, 
@@ -45,50 +28,19 @@ function App() {
       const arr = rx.exec(redirect_url ?? "none");
       if(arr != null){
         setAccessToken(arr[1]);
+        chrome.storage.local.set({accessToken: arr[1]});
         console.log("access token set to " + arr[1]);
       }
     });
+
+    chrome.storage.local.get({queue: []}, (data) => {
+      setQueue(data.queue);
+    })
+    chrome.storage.local.get({queueIndex: -1}, (data) => {
+      setQueueIndex(data.queueIndex);
+    })
+    
   }, [])
-  useEffect(() => { // set up player and detect when song ends
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      const token = 'YOUR_ACCESS_TOKEN';
-      const player = new Spotify.Player({
-        name: 'My Web Player',
-        getOAuthToken: cb => { cb(token); },
-        volume: 0.5
-      });
-    
-      // Connect to the player
-      player.connect();
-    
-      // Event listener for when the playback state changes
-      player.addListener('player_state_changed', (state) => {
-        if (!state) return;
-    
-        const { position, duration, paused } = state;
-    
-        // Check if the song has ended
-        if (position === 0 && paused === true) {
-          console.log('Song ended');
-          // Trigger any action you'd like here
-        }
-      });
-    
-      // Error handling
-      player.addListener('initialization_error', ({ message }) => {
-        console.error(message);
-      });
-      player.addListener('authentication_error', ({ message }) => {
-        console.error(message);
-      });
-      player.addListener('account_error', ({ message }) => {
-        console.error(message);
-      });
-      player.addListener('playback_error', ({ message }) => {
-        console.error(message);
-      });
-    };
-  }, [accessToken])
 
   useEffect(() => { // change displayed tracks on search change
     console.log("query: " + query)
@@ -114,10 +66,10 @@ function App() {
     }
     fetchTrack();
   }, [query])
-
+  
   useEffect(() => { // Play song when clicked
     if(playing == null) return;
-    const fetchPlaying = async () => {
+    const changePlaying = async () => {
       let playingParameters = {
         method: 'PUT',
         headers: {
@@ -135,9 +87,45 @@ function App() {
       console.log(response.status, response.statusText);
       console.log([playing.uri]);
     }
-    fetchPlaying();
+    changePlaying();
     
   }, [playing])
+
+  useEffect(() => { // update chrome storage when queue changes
+    if(firstRender){
+      setFirstRender(false);
+      return;
+    }
+    if(secondRender){
+      setSecondRender(false);
+      return;
+    }
+    console.log("queue was changed")
+    chrome.storage.local.set({queue: queue})
+    chrome.storage.local.set({queueIndex: -1})
+  }, [queue])
+
+  useEffect(() => { // update current playing song index
+    console.log("firstRender.current: " + firstRender);
+    if(firstRender){
+      setFirstRender(false);
+      return;
+    }
+    if(secondRender){
+      setSecondRender(false);
+      return;
+    }
+    console.log("got to queueIndex set")
+    chrome.storage.local.set({queueIndex: queueIndex})
+  }, [queueIndex])
+
+  function addTrack(track: any){
+    console.log("queue: " + queue)
+    const temp = [...queue];
+    temp.push(track);
+    setQueue(temp);
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Box>
@@ -147,11 +135,20 @@ function App() {
         <Box overflow={'auto'} height={'10rem'}>
           {!tracks.length ? null :
             tracks.map((element) => {
-              return (<Box sx={{cursor: 'pointer', mt: '1rem'}} onClick = {() => setPlaying(element)}>{element.artists[0].name}</Box>)
+              return (<Box sx={{cursor: 'pointer', mt: '1rem'}} onClick = {() => addTrack(element)}>{element.artists[0].name}</Box>)
             })
             // tracks[0].artists[0].name
           }
         </Box>
+        <Box>
+          {!queue.length ? null :
+            queue.map((element, i) => {
+              return (<Box sx={{mt: '0.5rem', cursor: 'pointer'}} onClick = {() => {setQueueIndex(i); console.log("index: " + i)}}>{element.name}</Box>)
+            })
+            // tracks[0].artists[0].name
+          }
+        </Box>
+        <Button sx={{p: 2}} onClick={() => {setQueue([])}}>Clear</Button>
       </Box>
     </ThemeProvider>
   )
