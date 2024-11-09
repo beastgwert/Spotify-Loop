@@ -3,21 +3,32 @@ let accessToken = "";
 let queueIndex = -1;
 let queue: string | any[] = [];
 
-// Revive service worker so it doesnt expire every 30 sec
+// const curTrack = await getCurrentTrack();
+        // console.log("comparison: " + curTrack + ' ' + queue[queueIndex].uri + (refreshID != -1 && curTrack != queue[queueIndex].uri));
+        // if(refreshID != -1 && curTrack != queue[queueIndex].uri){
+        //     console.log("interval cleared" + curTrack + " " + queue[queueIndex].uri);
+        //     // clearInterval(refreshID);
+        // }
+
 let refreshID = -1;
-const keepAlive = () => {
-    refreshID = setInterval(async () => {
-        const curTrack = await getCurrentTrack();
-        console.log("comparison: " + curTrack + ' ' + queue[queueIndex].uri);
+const keepAlive = () => { // revive service worker so it doesn't expire
+  refreshID = setInterval(chrome.runtime.getPlatformInfo, 20e3);
+}
+const checkInQueue = () => { // end service worker if not playing a song in queue
+  setInterval(async () => {
+    const curTrack = await getCurrentTrack();
+        console.log("comparison: " + curTrack + ' ' + queue[queueIndex].uri + " " + refreshID + " " + (refreshID != -1 && curTrack != queue[queueIndex].uri));
         if(refreshID != -1 && curTrack != queue[queueIndex].uri){
-            console.log("interval cleared");
+            console.log("interval cleared" + curTrack + " " + queue[queueIndex].uri);
             clearInterval(refreshID);
         }
-        return chrome.runtime.getPlatformInfo;
-    }, 20e3);
+  }, 20e3);
 }
 chrome.runtime.onStartup.addListener(keepAlive);
+chrome.runtime.onStartup.addListener(checkInQueue);
 keepAlive();
+checkInQueue();
+
 
 chrome.storage.local.get({accessToken: "", queueIndex: -1, queue: []}, (data) => {
     accessToken = data.accessToken;
@@ -36,7 +47,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
         if (key === "accessToken") {
           accessToken = newValue;
         }
-        else if(key == "queueIndex") {
+        else if(key == "queueIndex" || key == "queueIndexStatus") {
             console.log("Queue index was changed to " + queueIndex)
             queueIndex = newValue;
             changePlaying();
@@ -49,6 +60,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   });
 
 const changePlaying = async () => {
+  console.log("playing is being changed...");
     let playingParameters = {
       method: 'PUT',
       headers: {
@@ -58,7 +70,8 @@ const changePlaying = async () => {
       },
       body: JSON.stringify({
         // 'context_uri': playing.artists[0].uri,
-        'uris': [queue[queueIndex].uri]
+        'uris': [queue[queueIndex].uri],
+        'position_ms': 0
       })
     }
     const response = await fetch('https://api.spotify.com/v1/me/player/play', playingParameters);

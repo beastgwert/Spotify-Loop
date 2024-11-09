@@ -126,6 +126,26 @@ function App() {
     setQueue(temp);
   }
 
+  const changePlaying = async () => {
+    console.log("playing is being changed...");
+      let playingParameters = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + accessToken
+        },
+        body: JSON.stringify({
+          // 'context_uri': playing.artists[0].uri,
+          'uris': [queue[queueIndex].uri],
+          'position_ms': 0
+        })
+      }
+      const response = await fetch('https://api.spotify.com/v1/me/player/play', playingParameters);
+      console.log(response.status, response.statusText);
+      console.log([queue[queueIndex].uri]);
+    }
+    
   return (
     <ThemeProvider theme={theme}>
       <Box>
@@ -143,7 +163,11 @@ function App() {
         <Box>
           {!queue.length ? null :
             queue.map((element, i) => {
-              return (<Box sx={{mt: '0.5rem', cursor: 'pointer'}} onClick = {() => {setQueueIndex(i); console.log("index: " + i)}}>{element.name}</Box>)
+              return (<Box sx={{mt: '0.5rem', cursor: 'pointer'}} onClick = {() => {
+                if(i == queueIndex) changePlaying();
+                setQueueIndex(i); 
+                console.log("index: " + i);
+              }}>{element.name}</Box>)
             })
             // tracks[0].artists[0].name
           }
