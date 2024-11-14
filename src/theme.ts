@@ -11,21 +11,22 @@ declare module '@mui/material/styles' {
   }
 
 const darkColorList = ['#250001', 'rgb(17 24 39)', '#151515', '#3A2E39', '#32322C'];
-const lightColorList = ['#F9FBF2', '#F9E7E7', '#C7CCB9']
-const light = lightColorList[1];
+const lightColorList = ['#F9FBF2', '#F9E7E7', '#C7CCB9', '#FFFFFF']
+const light = lightColorList[3];
 const dark = darkColorList[4];
 const theme = createTheme({
     palette: {
       primary: {
           main:  light,
-          hover: 'rgba(221, 198, 182, 0.1)'
+          contrastText: '#b3b3b3',
+          hover: 'rgba(221, 198, 182, 0.3)'
       },
       secondary: {
           main: dark
       },
     },
     typography: {
-      "fontFamily": `"Noto Sans", "Montserrat", "Roboto", "Helvetica", "Arial", sans-serif`,
+      "fontFamily": `"Plus Jakarta Sans", "Noto Sans", "Montserrat", "Roboto", "Helvetica", "Arial", sans-serif`,
       allVariants: {
         color: light
       },   
@@ -39,19 +40,26 @@ const theme = createTheme({
                 disableRipple: true,
             },
         },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    borderRadius: "5px",
+                },
+            }
+        },
         MuiInputBase: {
             styleOverrides: {
                 input: {
-                color: light, // Global input text color
+                    color: dark, // Global input text color
                 },
             },
         },
         MuiInputLabel: {
             styleOverrides: {
                 root: {
-                    color: light, // Default color for all labels
+                    color: dark, // Default color for all labels
                     '&.Mui-focused': {
-                    color: light, // Color when focused
+                    color: dark, // Color when focused
                     },
                 },
             },
