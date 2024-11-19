@@ -1,44 +1,52 @@
+import {getAccessToken, refreshAccessToken, authenticate} from '../authenticate'
+
+// Automatically check for token refresh on startup
+chrome.runtime.onStartup.addListener(async () => {
+  const { expiresIn } = await chrome.storage.local.get("expiresIn");
+  if (!expiresIn || Date.now() >= expiresIn) {
+    await refreshAccessToken();
+  }
+});
+
 const interval = 1000; // Poll every 1 second
+let refreshID = 0;
 let accessToken = ""; 
 let queueIndex = -1;
 let queue: string | any[] = [];
 let isRunning = false;
-if (!('serviceWorker' in navigator)) {
-  console.log("sad hours :(");
-}
+let isInQueue = true;
 chrome.storage.local.set({nextTrack: 1});
-// const curTrack = await getCurrentTrack();
-        // console.log("comparison: " + curTrack + ' ' + queue[queueIndex].uri + (refreshID != -1 && curTrack != queue[queueIndex].uri));
-        // if(refreshID != -1 && curTrack != queue[queueIndex].uri){
-        //     console.log("interval cleared" + curTrack + " " + queue[queueIndex].uri);
-        //     // clearInterval(refreshID);
-        // }
+
+const refreshServiceWorker = async () => {
+  console.log("service worker refreshed!");
+  await chrome.runtime.getPlatformInfo;
+}
 console.log("new service worker instance started");
-const keepAlive = () => { // revive service worker so it doesn't expire
-  setInterval(chrome.runtime.getPlatformInfo, 20e3);
+// const keepAlive = () => { // revive service worker so it doesn't expire
+//   console.log("I'm alive!");
+//   refreshID = setInterval(refreshServiceWorker, 20e3);
+// }
+
+const keepRefresh = () => {
+  setInterval(authenticate, 1000 * interval)
 }
 const checkInQueue = () => { // end service worker if not playing a song in queue
-  setInterval(async () => {
+  const checkQueueID = setInterval(async () => {
     const curTrack = await getCurrentTrack();
+    console.log("interval check " + curTrack + " " + queue[queueIndex].uri);
     if(curTrack != queue[queueIndex].uri){
-      // console.log("interval cleared" + curTrack + " " + queue[queueIndex].uri);
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then((registration) => {
-          console.log("registration info: " + registration);
-          if (registration) {
-            registration.unregister().then((boolean) => {
-                if (boolean) {
-                    console.log('Service Worker unregistered successfully');
-                }
-            });
-        }});
-      }
+      console.log("interval cleared" + curTrack + " " + queue[queueIndex].uri + " " + refreshID);
+      isInQueue = false;
+      clearInterval(refreshID);
+      clearInterval(checkQueueID);
     }
   }, 20e3);
 }
-chrome.runtime.onStartup.addListener(keepAlive);
+// chrome.runtime.onStartup.addListener(keepAlive);
+chrome.runtime.onStartup.addListener(keepRefresh);
 chrome.runtime.onStartup.addListener(checkInQueue);
-keepAlive();
+// keepAlive();
+keepRefresh();
 checkInQueue();
 
 
@@ -64,6 +72,11 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
           queueIndex = newValue;
         }
         else if(key == "nextTrack"){
+          if(!isInQueue){
+            isInQueue = true;
+            checkInQueue();
+            // keepAlive();
+          }
           await changePlaying();
         }
         else if(key == "queue"){
@@ -80,7 +93,7 @@ const changePlaying = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer ' + accessToken
+        'Authorization': 'Bearer ' + await getAccessToken()
       },
       body: JSON.stringify({
         // 'context_uri': playing.artists[0].uri,
@@ -119,9 +132,10 @@ const setStorageData = (keyValue: Partial<{ [key: string]: any; }>) => {
 
 const checkTrackEnd = async () => {
   try {
-    console.log("isRunning: " +  isRunning);
-    if(isRunning) return;
+    console.log("isRunning + isInQueue: " +  isRunning + " " + isInQueue);
+    if(isRunning || !isInQueue) return;
     isRunning = true;
+    accessToken = await getAccessToken();
     console.log("access token: " + accessToken);
     if(accessToken == "" || queueIndex == -1 || queue.length == 0) return;
     const response = await fetch('https://api.spotify.com/v1/me/player', {
@@ -159,7 +173,7 @@ const getCurrentTrack = async () => {
         if(accessToken == "" || queueIndex == -1 || queue.length == 0) return;
         const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
           headers: {
-            Authorization: 'Bearer ' + accessToken,
+            Authorization: 'Bearer ' + await getAccessToken(),
           },
         });
     

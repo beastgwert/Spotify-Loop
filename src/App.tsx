@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Button, TextField, ThemeProvider } from '@mui/material';
 import theme from './theme';
 import zIndex from '@mui/material/styles/zIndex';
 import Track from './components/Track';
+import {getAccessToken} from './authenticate'
 
-const CLIENT_ID = '8fdde060b8c64993b8f965511f1eeed1';
 const redirectUri = chrome.identity.getRedirectURL();
-
 function App() {
-  // console.log(redirectUri);
+  console.log("popup rerendered! " + redirectUri);
   const [query, setQuery] = useState("");
-  const [accessToken, setAccessToken] = useState("")
   const [tracks, setTracks] = useState<any[]>([]);
   const [playing, setPlaying] = useState<any>(null);
   const [queue, setQueue] = useState<any[]>([]);
@@ -18,35 +16,21 @@ function App() {
   const [firstRender, setFirstRender] = useState(true);
   const [secondRender, setSecondRender] = useState(true);
   const [focus, setFocus] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
 
-  useEffect(() => { // authorize user and get access token 
-    console.log("Authorizing user...");
-    const scopes = ["user-read-private", "user-read-email", "user-modify-playback-state", "user-read-playback-state"];
-    chrome.identity.launchWebAuthFlow({
-      "url": `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=${scopes.join('%20')}`, 
-      'interactive': true,  
-    }, (redirect_url) => { 
-      console.log(redirect_url);
-      const rx=/access_token=([^&]*)/;
-      const arr = rx.exec(redirect_url ?? "none");
-      if(arr != null){
-        setAccessToken(arr[1]);
-        chrome.storage.local.set({accessToken: arr[1]});
-        console.log("access token set to " + arr[1]);
-      }
-    });
-
+  useEffect(() => {
     chrome.storage.local.get({queue: []}, (data) => {
       setQueue(data.queue);
     })
     chrome.storage.local.get({queueIndex: -1}, (data) => {
       setQueueIndex(data.queueIndex);
     })
-    
   }, [])
+  // useEffect(() => {
+  //   authenticate()
+  // }, [authenticate]);
 
-  useEffect(() => { // change displayed tracks on search change
+  // change displayed tracks on search change
+  useEffect(() => { 
     console.log("query: " + query)
     // if(query == ""){
     //   setTracks([]);
@@ -57,7 +41,7 @@ function App() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + accessToken
+          'Authorization': 'Bearer ' + await getAccessToken()
         }
       }
       let trackID = await fetch('https://api.spotify.com/v1/search?q=' + (query == "" ? "a" : query) + '&type=track', trackParameters)
@@ -70,32 +54,9 @@ function App() {
     }
     fetchTrack();
   }, [query, focus])
-  
-  useEffect(() => { // Play song when clicked
-    if(playing == null) return;
-    const changePlaying = async () => {
-      let playingParameters = {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + accessToken
-        },
-        body: JSON.stringify({
-          // 'context_uri': playing.artists[0].uri,
-          'uris': [playing.uri],
-          'position_ms': 0
-        })
-      }
-      const response = await fetch('https://api.spotify.com/v1/me/player/play', playingParameters);
-      console.log(response.status, response.statusText);
-      console.log([playing.uri]);
-    }
-    changePlaying();
-    
-  }, [playing])
 
-  useEffect(() => { // update chrome storage when queue changes
+  // update chrome storage when queue changes
+  useEffect(() => { 
     if(firstRender){
       setFirstRender(false);
       return;
@@ -106,10 +67,10 @@ function App() {
     }
     console.log("queue was changed")
     chrome.storage.local.set({queue: queue})
-    chrome.storage.local.set({queueIndex: -1})
   }, [queue])
 
-  useEffect(() => { // update current playing song index
+  // update current playing song index
+  useEffect(() => { 
     console.log("firstRender.current: " + firstRender);
     if(firstRender){
       setFirstRender(false);
@@ -132,23 +93,23 @@ function App() {
 
   const changePlaying = async () => {
     console.log("playing is being changed...");
-      let playingParameters = {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + accessToken
-        },
-        body: JSON.stringify({
-          // 'context_uri': playing.artists[0].uri,
-          'uris': [queue[queueIndex].uri],
-          'position_ms': 0
-        })
-      }
-      const response = await fetch('https://api.spotify.com/v1/me/player/play', playingParameters);
-      console.log(response.status, response.statusText);
-      console.log([queue[queueIndex].uri]);
+    let playingParameters = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + await getAccessToken()
+      },
+      body: JSON.stringify({
+        // 'context_uri': playing.artists[0].uri,
+        'uris': [queue[queueIndex].uri],
+        'position_ms': 0
+      })
     }
+    const response = await fetch('https://api.spotify.com/v1/me/player/play', playingParameters);
+    console.log(response.status, response.statusText);
+    console.log([queue[queueIndex].uri]);
+  }
     
   return (
     <ThemeProvider theme={theme}>
