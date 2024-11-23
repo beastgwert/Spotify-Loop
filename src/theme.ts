@@ -10,7 +10,7 @@ declare module '@mui/material/styles' {
     }
   }
 
-const darkColorList = ['#250001', 'rgb(17 24 39)', '#151515', '#3A2E39', '#32322C'];
+const darkColorList = ['#250001', 'rgb(17 24 39)', '#151515', '#3A2E39', '#191414', '#32322C'];
 const lightColorList = ['#F9FBF2', '#F9E7E7', '#C7CCB9', '#FFFFFF']
 const light = lightColorList[3];
 const dark = darkColorList[4];

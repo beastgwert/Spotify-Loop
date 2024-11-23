@@ -12,10 +12,14 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.8",
     "@mui/material": "^6.1.6",
     "@types/chrome": "^0.0.280",
+    "colorthief": "^2.6.0",
+    "core-js": "^3.39.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-drag-listview": "^2.0.0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.28",
