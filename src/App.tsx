@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Box, TextField, ThemeProvider, Typography} from '@mui/material';
+import {Box, TextField, ThemeProvider} from '@mui/material';
 import ReactDragListView from 'react-drag-listview';
 import theme from './theme';
 import Track from './components/Track';
@@ -43,7 +43,7 @@ function App() {
     });
   }, []);
 
-  // periodically check if there is an active spotify instance
+  // periodically check for active spotify instance
   useEffect(() => {
     setInterval(async () => {
       const response = await fetch('https://api.spotify.com/v1/me/player', {
@@ -248,6 +248,7 @@ function App() {
               mt: '1.5rem',
               width: '90%',
               height: '20rem',
+              borderBottom: '0.5px solid white',
               overflow: 'scroll',
               '&::-webkit-scrollbar': { display: 'none' },
             }}
