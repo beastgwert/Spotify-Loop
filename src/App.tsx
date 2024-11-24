@@ -23,7 +23,7 @@ function App() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSpotifyActive, setIsSpotifyActive] = useState(false);
 
-  // update values when storage 
+  // update values on storage change
   useEffect(() => {
     chrome.storage.onChanged.addListener(async (changes, areaName) => {
       if (areaName === 'local') {
@@ -57,7 +57,7 @@ function App() {
       } else if (response.ok) {
         setIsSpotifyActive(true);
       }
-    }, 2e3);
+    }, 1e3);
   }, []);
 
   // initialize values
@@ -84,7 +84,7 @@ function App() {
           Authorization: 'Bearer ' + (await getAccessToken()),
         },
       };
-      let trackID = await fetch(
+      await fetch(
         'https://api.spotify.com/v1/search?q=' +
           (query == '' ? 'a' : query) +
           '&type=track',
@@ -110,6 +110,7 @@ function App() {
       return;
     }
     chrome.storage.local.set({ queue: queue });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queue]);
 
   function addTrack(track: any) {
