@@ -7,6 +7,7 @@ import { getAccessToken } from './authenticate';
 import Controls from './components/Controls';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import TrackView from './components/TrackView';
+import Header from './components/Header';
 
 const redirectUri = chrome.identity.getRedirectURL();
 function App() {
@@ -181,8 +182,9 @@ function App() {
             overflow: 'hidden',
           }}
         >
+          <Header isSpotifyActive={isSpotifyActive}></Header>
           <Box
-            sx={{ mt: '2rem', width: '90%', position: 'relative', zIndex: 15 }}
+            sx={{ mt: '1rem', width: '90%', position: 'relative', zIndex: 15 }}
           >
             <TextField
               sx={{
@@ -208,7 +210,7 @@ function App() {
                 sx={{
                   zIndex: 15,
                   width: '100%',
-                  maxHeight: '10rem',
+                  maxHeight: '15rem',
                   bgcolor: 'white',
                   position: 'absolute',
                   borderRadius: '0 0 5px 5px',
@@ -240,24 +242,10 @@ function App() {
                     })}
               </Box>
             )}
-            {isSpotifyActive ? null : (
-              <Typography
-                sx={{
-                  width: '100%',
-                  mt: '0.5rem',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  position: 'absolute',
-                  color: 'primary.main',
-                }}
-              >
-                Searching for active spotify player...
-              </Typography>
-            )}
           </Box>
           <Box
             sx={{
-              mt: '2rem',
+              mt: '1.5rem',
               width: '90%',
               height: '20rem',
               overflow: 'scroll',
@@ -296,7 +284,7 @@ function App() {
             setIsExpanded={setIsExpanded}
           ></TrackView>
           <KeyboardArrowUpIcon
-            sx={{ cursor: 'pointer' }}
+            sx={{ cursor: 'pointer', mt: '1rem' }}
             onClick={async () => {
               await chrome.storage.local.set({
                 isExpanded: isExpanded ? false : true,
