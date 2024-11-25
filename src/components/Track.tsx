@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 interface TrackProps {
   queue: unknown[];
   queueIndex: number;
-  setQueueIndex: React.Dispatch<React.SetStateAction<number>>;
   setQueue: React.Dispatch<React.SetStateAction<unknown[]>>;
   ind: number;
   trackInfo: any;
@@ -17,7 +16,6 @@ interface TrackProps {
 const Track: React.FC<TrackProps> = ({
   queue,
   queueIndex,
-  setQueueIndex,
   setQueue,
   ind,
   trackInfo,
@@ -143,10 +141,10 @@ const Track: React.FC<TrackProps> = ({
             ml: '0.5rem',
             opacity: !isHovered || isDragging ? 0 : null,
           }}
-          onClick={() => {
+          onClick={async () => {
             if (isHovered) {
-              if (ind < queueIndex) setQueueIndex(queueIndex - 1);
-              else if (ind == queueIndex) setQueueIndex(-1);
+              if (ind < queueIndex) await chrome.storage.local.set({ queueIndex: queueIndex - 1 });
+              else if (ind == queueIndex) await chrome.storage.local.set({ queueIndex: -1 });
               setQueue(queue.toSpliced(ind, 1));
             }
           }}

@@ -35,7 +35,6 @@ const checkInQueue = () => { // end service worker if not playing a song in queu
     if(!isSpotifyActive){
       console.log("interval cleared");
       await chrome.storage.local.set({queueIndex: -1});
-      await chrome.storage.local.set({isSpotifyActive: false});
       clearInterval(checkQueueID);
     }
   }, 2e3);

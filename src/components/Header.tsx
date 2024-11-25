@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({isSpotifyActive}) => {
                 <WifiIcon sx={{ color: '#1DB954', fontSize: '1rem'}}></WifiIcon>
             </Tooltip>
             :
-            <Tooltip title="No active spotify">
+            <Tooltip title="No active spotify player">
                 <WifiOffIcon sx={{ color: '#f5765b', fontSize: '1rem'}}></WifiOffIcon>
             </Tooltip>
             }

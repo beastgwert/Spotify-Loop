@@ -130,7 +130,7 @@ function App() {
     const [movedTrack] = updatedQueue.splice(fromIndex, 1);
     updatedQueue.splice(toIndex, 0, movedTrack);
 
-    if (fromIndex == queueIndex) setQueueIndex(toIndex);
+    if (fromIndex == queueIndex) chrome.storage.local.set({queueIndex: toIndex});
     else if (
       fromIndex < toIndex &&
       queueIndex > fromIndex &&
@@ -264,7 +264,6 @@ function App() {
                     return (
                       <Track
                         queueIndex={queueIndex}
-                        setQueueIndex={setQueueIndex}
                         queue={queue}
                         setQueue={setQueue}
                         ind={i}

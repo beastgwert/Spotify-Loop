@@ -139,6 +139,7 @@ const Controls: React.FC<ControlsProps> = ({
           }}
           onClick={async () => {
             if (!isSpotifyActive) return;
+            console.log("queueIndex value!!!!: " + queueIndex + " " + (queueIndex + 1) % queueLength)
             await chrome.storage.local.set({
               queueIndex: (queueIndex + 1) % queueLength,
             });

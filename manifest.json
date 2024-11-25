@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "version": "1.0.0",
-    "name": "First App",
+    "name": "Spotify Loop",
     "action": {
         "default_popup": "index.html",
         "default_icon": {
@@ -12,24 +12,10 @@
         }
     },
     "permissions": [
-        "scripting",
         "identity",
-        "declarativeContent", 
         "https://accounts.spotify.com/*",  
         "https://accounts.spotify.com/authorize/*",
-        "storage",
-        "offscreen"
-    ],
-    "host_permissions": [
-        "http://*/*",
-        "https://*/*",
-        "https://open.spotify.com/*"
-    ],
-    "content_scripts": [
-        {
-            "matches": ["https://open.spotify.com/*"],
-            "js": ["src/scripts/test.ts"]
-        }
+        "storage"
     ],
     "background": {
         "service_worker": "src/background/playback.ts"
