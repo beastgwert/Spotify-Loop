@@ -6,14 +6,6 @@ interface Track {
   // other properties
 }
 
-// Automatically check for token refresh on startup
-chrome.runtime.onStartup.addListener(async () => {
-  const { expiresIn } = await chrome.storage.local.get("expiresIn");
-  if (!expiresIn || Date.now() >= expiresIn) {
-    await refreshAccessToken();
-  }
-});
-
 const interval = 1000; 
 let accessToken = ""; 
 let queueIndex = -1;
@@ -21,29 +13,15 @@ let queue: Track[] = [];
 let isRunning = false;
 chrome.storage.local.set({nextTrack: 1});
 
+
 const refreshServiceWorker = async () => {
   console.log("service worker refreshed!");
-  await chrome.runtime.getPlatformInfo;
+  await refreshAccessToken();
 }
 
 const keepRefresh = () => { // refresh access token every 2000 seconds
   setInterval(refreshServiceWorker, 2000 * interval)
 }
-const checkInQueue = () => { // end service worker if not playing a song in queue
-  const checkQueueID = setInterval(async () => { // keeps service worker alive
-    const isSpotifyActive = await checkSpotifyPlayback();
-    if(!isSpotifyActive){
-      console.log("interval cleared");
-      await chrome.storage.local.set({queueIndex: -1});
-      clearInterval(checkQueueID);
-    }
-  }, 2e3);
-}
-chrome.runtime.onStartup.addListener(keepRefresh);
-chrome.runtime.onStartup.addListener(checkInQueue);
-keepRefresh();
-checkInQueue();
-
 
 chrome.storage.local.get({accessToken: "", queueIndex: -1, queue: []}, (data) => {
     accessToken = data.accessToken;
@@ -97,12 +75,19 @@ const changePlaying = async () => {
 
 const checkTrackEnd = async () => {
   try {
-    console.log("isRunning " +  isRunning);
+    console.log("checking track end...");
     if(isRunning) return; // no coexisting requests
     isRunning = true;
-    accessToken = await getAccessToken();
+
+    const isSpotifyActive = await checkSpotifyPlayback();
+    if(!isSpotifyActive) return;
+    
     console.log("access token: " + accessToken);
-    if(accessToken == "" || queueIndex == -1 || queue.length == 0) return;
+    if(!accessToken || accessToken == "" || queueIndex == -1 || queue.length == 0) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const awake = getAccessToken();
+
     const response = await fetch('https://api.spotify.com/v1/me/player', {
       headers: {
         Authorization: 'Bearer ' + accessToken,
@@ -152,5 +137,15 @@ const checkSpotifyPlayback = async () => {
   }
 }
 
-// Start polling
-setInterval(checkTrackEnd, interval);
+// initiate processes
+const startApp = async () => {
+  console.log("app started!");
+  // Start polling
+  await refreshAccessToken();
+  const tempToken = await getAccessToken();
+  if(!tempToken || tempToken == "") return;
+  setInterval(checkTrackEnd, interval);
+  keepRefresh();
+}
+
+startApp();

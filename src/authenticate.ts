@@ -7,16 +7,11 @@ const tokenEndpoint = 'https://accounts.spotify.com/api/token';
 
 // retrieve access token, or refresh if expired
 export async function getAccessToken() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { accessToken, expiresIn } = await chrome.storage.local.get([
     'accessToken',
     'expiresIn',
   ]);
-  if (!accessToken || Date.now() >= expiresIn) {
-    await refreshAccessToken();
-    const updatedData = await chrome.storage.local.get('accessToken');
-    console.log('attempted access token: ' + updatedData.accessToken);
-    return updatedData.accessToken;
-  }
   return accessToken;
 }
 

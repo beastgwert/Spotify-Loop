@@ -3,7 +3,7 @@ import {Box, TextField, ThemeProvider} from '@mui/material';
 import ReactDragListView from 'react-drag-listview';
 import theme from './theme';
 import Track from './components/Track';
-import { getAccessToken } from './authenticate';
+import { getAccessToken, refreshAccessToken } from './authenticate';
 import Controls from './components/Controls';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import TrackView from './components/TrackView';
@@ -23,6 +23,11 @@ function App() {
   const [playing, setPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSpotifyActive, setIsSpotifyActive] = useState(false);
+
+  // authenticate user or refresh token on popup
+  useEffect(() => {
+    refreshAccessToken();
+  }, [])
 
   // update values on storage change
   useEffect(() => {
