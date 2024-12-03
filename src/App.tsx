@@ -9,6 +9,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import TrackView from './components/TrackView';
 import Header from './components/Header';
 
+console.log = function () {};
+
 const redirectUri = chrome.identity.getRedirectURL();
 function App() {
   console.log('popup rerendered! ' + redirectUri);

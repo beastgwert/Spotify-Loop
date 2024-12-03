@@ -1,4 +1,5 @@
 import {getAccessToken, refreshAccessToken} from '../authenticate'
+console.log = function () {};
 console.log("new service worker instance started");
 
 interface Track {
