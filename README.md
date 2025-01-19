@@ -1,6 +1,7 @@
 # Spotify Loop
 
 A tool that lets you create a playlist that lives in Chrome.
+![Spotify Loop Screenshot](public/demo.png)
 
 ## Why Should You Use This?
 
