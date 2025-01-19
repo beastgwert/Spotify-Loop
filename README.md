@@ -1,50 +1,34 @@
-# React + TypeScript + Vite
+# Spotify Loop
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A tool that lets you create a playlist that lives in Chrome.
 
-Currently, two official plugins are available:
+## Why Should You Use This?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Organization**: Separate your dynamic playlist from your normal playlists.  
+- **Clean UI**: A minimalistic yet functional design similar to Spotify’s mobile UI.  
+- **Instant Access**: Control playback from your browser without switching tabs.  
 
-## Expanding the ESLint configuration
+## Caveats
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Requires Spotify Premium.  
+- You need to search for a song to add it.  
 
-- Configure the top-level `parserOptions` property like this:
+## Why I Built It
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+I often find myself guilty of listening to the same set of five songs and neglecting the two hundred other songs in a playlist. The most obvious solution is to loop over a new playlist, but I wanted a cleaner and more intuitive interface.  
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+I use this extension regularly, and I hope others also find it useful!
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Future Features
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+- **Shuffle Button**: Will implement true shuffle functionality.  
+- **Add Songs Directly**: Option to add songs directly using the Spotify web app.  
+- **Export Playlist**: Export your playlist to Spotify or other formats.  
+
+## Link to Chrome Web Store
+
+[Spotify Loop - Chrome Extension](https://chromewebstore.google.com/detail/spotify-loop/mpimcbcjjjabekebnmdchehgkimeekfi)
+
+## Want to Try the Extension?
+
+I am currently waiting for a quota extension from Spotify, so if you want to try the extension, feel free to reach out so I can manually add you to the user access list. Otherwise, you can try cloning this repo and setting up an endpoint to generate the client ID and client secret in your config file. 
